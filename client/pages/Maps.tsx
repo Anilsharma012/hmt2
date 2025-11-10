@@ -323,7 +323,9 @@ export default function Maps() {
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
-            if (e.target === e.currentTarget) closeViewer();
+            // Only close if clicking on the backdrop (not zoomed in)
+            // Prevent closing if user has zoomed in (scale > 1)
+            if (e.target === e.currentTarget && scale <= 1) closeViewer();
           }}
         >
           {/* Close */}
