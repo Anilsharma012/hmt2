@@ -236,56 +236,53 @@ City Electrical Works,9876543210,Model Town Rohtak,28.8955,76.6066,https://examp
             </h4>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>
-                <code className="bg-gray-100 px-2 py-1 rounded">catSlug</code>{" "}
-                or{" "}
-                <code className="bg-gray-100 px-2 py-1 rounded">
-                  categorySlug
-                </code>{" "}
-                - Category slug (will be auto-created if missing)
+                <code className="bg-gray-100 px-2 py-1 rounded">name</code>{" "}
+                <span className="text-red-500">*</span> - Business/Service name
               </li>
               <li>
-                <code className="bg-gray-100 px-2 py-1 rounded">subSlug</code> -
-                Subcategory slug (will be auto-created if missing)
+                <code className="bg-gray-100 px-2 py-1 rounded">phone</code>{" "}
+                <span className="text-red-500">*</span> - Contact phone number
               </li>
               <li>
-                <code className="bg-gray-100 px-2 py-1 rounded">name</code> -
-                Business name
+                <code className="bg-gray-100 px-2 py-1 rounded">address</code>{" "}
+                <span className="text-red-500">*</span> - Full address
               </li>
               <li>
-                <code className="bg-gray-100 px-2 py-1 rounded">phone</code> -
-                Contact phone number
+                <code className="bg-gray-100 px-2 py-1 rounded">lat</code>{" "}
+                <span className="text-red-500">*</span> - Latitude coordinate
               </li>
               <li>
-                <code className="bg-gray-100 px-2 py-1 rounded">address</code> -
-                Full address
+                <code className="bg-gray-100 px-2 py-1 rounded">lng</code>{" "}
+                <span className="text-red-500">*</span> - Longitude coordinate
               </li>
-              <li>
-                <code className="bg-gray-100 px-2 py-1 rounded">lat</code> -
-                Latitude coordinate
-              </li>
-              <li>
-                <code className="bg-gray-100 px-2 py-1 rounded">lng</code> -
-                Longitude coordinate
-              </li>
+            </ul>
+            <h4 className="font-medium text-gray-900 mb-2 mt-4">
+              Optional Columns:
+            </h4>
+            <ul className="text-sm text-gray-600 space-y-1">
               <li>
                 <code className="bg-gray-100 px-2 py-1 rounded">
                   photo1, photo2, photo3, photo4
                 </code>{" "}
-                - Photo URLs (optional)
+                - Photo URLs (up to 4 photos)
               </li>
               <li>
                 <code className="bg-gray-100 px-2 py-1 rounded">open</code> -
-                Opening time (format: HH:MM)
+                Opening time (format: HH:MM, default: 09:00)
               </li>
               <li>
                 <code className="bg-gray-100 px-2 py-1 rounded">close</code> -
-                Closing time (format: HH:MM)
+                Closing time (format: HH:MM, default: 18:00)
               </li>
               <li>
                 <code className="bg-gray-100 px-2 py-1 rounded">active</code> -
-                true/false for active status
+                true/false for active status (default: true)
               </li>
             </ul>
+            <p className="text-sm text-gray-600 mt-4">
+              <strong>Note:</strong> Category and subcategory are selected above
+              and will be automatically applied to all rows in the CSV.
+            </p>
           </div>
 
           <div>
