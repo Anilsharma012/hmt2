@@ -136,31 +136,59 @@ export default function OtherServicesCategory() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {subcategories.map((subcategory) => (
-              <Link
-                key={subcategory._id}
-                to={`/other-services/${cat}/${subcategory.slug}`}
-                className="group"
-              >
-                <Card
-                  data-testid="os-subcat-card"
-                  className="h-full transition-all duration-200 hover:shadow-lg hover:scale-105 hover:border-[#C70000] bg-white"
+              <div key={subcategory._id} className="group">
+                <Link
+                  to={`/other-services/${cat}/${subcategory.slug}`}
+                  className="block h-full"
                 >
-                  <CardContent className="p-6 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#C70000] to-[#A60000] rounded-full mb-4 group-hover:scale-110 transition-transform duration-200">
-                      <Wrench className="h-8 w-8 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-[#C70000] transition-colors">
-                      {subcategory.name}
-                    </h3>
-                    <div className="flex items-center justify-center text-[#C70000] opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-sm font-medium mr-1">
-                        View Listings
-                      </span>
-                      <ArrowRight className="h-4 w-4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                  <Card
+                    data-testid="os-subcat-card"
+                    className="h-full transition-all duration-200 hover:shadow-lg hover:scale-105 hover:border-[#C70000] bg-white"
+                  >
+                    <CardContent className="p-6 text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#C70000] to-[#A60000] rounded-full mb-4 group-hover:scale-110 transition-transform duration-200">
+                        <Wrench className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-[#C70000] transition-colors">
+                        {subcategory.name}
+                      </h3>
+                      {(subcategory as any).excelFile && (
+                        <div className="my-3 flex items-center justify-center gap-2">
+                          <FileText className="h-4 w-4 text-blue-600" />
+                          <a
+                            href={(subcategory as any).excelFile.fileUrl}
+                            download={(subcategory as any).excelFile.fileName}
+                            onClick={(e) => e.preventDefault()}
+                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            Download File
+                          </a>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-center text-[#C70000] opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-sm font-medium mr-1">
+                          View Listings
+                        </span>
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+                {(subcategory as any).excelFile && (
+                  <Button
+                    asChild
+                    className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <a
+                      href={(subcategory as any).excelFile.fileUrl}
+                      download={(subcategory as any).excelFile.fileName}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Excel File
+                    </a>
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
         )}
