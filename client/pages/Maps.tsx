@@ -388,6 +388,13 @@ export default function Maps() {
             </div>
           )}
 
+          {/* Zoom instructions (shown when not zoomed) */}
+          {scale === 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-center text-white text-xs px-2 py-1 bg-black/40 rounded max-w-xs">
+              📱 Double-tap or pinch to zoom | 🖱️ Scroll to zoom | Drag to pan
+            </div>
+          )}
+
           {/* Caption + Reset */}
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-center text-white text-sm px-3 py-1 bg-black/40 rounded">
             <div className="font-medium">
@@ -399,7 +406,7 @@ export default function Maps() {
             {scale > 1 && (
               <button
                 onClick={resetTransform}
-                className="mt-2 text-xs underline decoration-dotted"
+                className="mt-2 text-xs underline decoration-dotted hover:text-gray-200"
               >
                 Reset zoom
               </button>
