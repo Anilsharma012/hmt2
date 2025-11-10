@@ -156,6 +156,71 @@ City Electrical Works,9876543210,Model Town Rohtak,28.8955,76.6066,https://examp
         </p>
       </div>
 
+      {/* Category & Subcategory Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Select Category & Subcategory</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                disabled={loadingCategories}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#C70000] focus:border-[#C70000] disabled:bg-gray-100"
+              >
+                <option value="">
+                  {loadingCategories ? "Loading..." : "Select a category"}
+                </option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat.slug}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Subcategory <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                disabled={!selectedCategory || loadingSubcategories}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#C70000] focus:border-[#C70000] disabled:bg-gray-100"
+              >
+                <option value="">
+                  {loadingSubcategories
+                    ? "Loading..."
+                    : !selectedCategory
+                      ? "Select category first"
+                      : "Select a subcategory"}
+                </option>
+                {subcategories.map((subcat) => (
+                  <option key={subcat._id} value={subcat.slug}>
+                    {subcat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {selectedCategory && selectedSubcategory && (
+            <div className="bg-green-50 border border-green-200 rounded-md p-3">
+              <p className="text-green-700 text-sm">
+                ✓ Selected: <strong>{selectedCategory}</strong> →{" "}
+                <strong>{selectedSubcategory}</strong>
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Instructions */}
       <Card>
         <CardHeader>
