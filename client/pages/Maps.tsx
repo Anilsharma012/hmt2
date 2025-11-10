@@ -134,8 +134,8 @@ export default function Maps() {
     // Double-tap / double-click zoom toggle
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
-      // toggle between 1 and 2
-      const newScale = scale > 1 ? 1 : 2;
+      // Double-tap zooms to 2x, double-tap again to reset to 1x
+      const newScale = scale > 1.5 ? 1 : 2;
       setScale(newScale);
       setOffset({ x: 0, y: 0 });
       setLastOffset({ x: 0, y: 0 });
