@@ -151,7 +151,7 @@ export default function Maps() {
 
     const points = [...pointersRef.current.values()];
     if (points.length === 2) {
-      // Pinch
+      // Pinch - calculate scale with improved responsiveness
       const d = getTwoPointerDistance(points[0], points[1]);
       if (baseDistanceRef.current == null) {
         baseDistanceRef.current = d;
@@ -159,23 +159,22 @@ export default function Maps() {
         return;
       }
       const factor = d / (baseDistanceRef.current || d);
-      let nextScale = clamp(baseScaleRef.current * factor, 1, 5);
+      // Clamp to reasonable zoom range (1-4x for clarity at all zoom levels)
+      let nextScale = clamp(baseScaleRef.current * factor, 1, 4);
       setScale(nextScale);
-      // Keep offset reasonable (optional: simple damp)
-      setOffset((prev) => ({ x: clamp(prev.x, -2000, 2000), y: clamp(prev.y, -2000, 2000) }));
+      // Keep offset reasonable based on current scale
+      const maxOffset = 3000 * (nextScale / 4);
+      setOffset((prev) => ({ x: clamp(prev.x, -maxOffset, maxOffset), y: clamp(prev.y, -maxOffset, maxOffset) }));
     } else if (points.length === 1) {
       // Pan when zoomed
       if (scale > 1) {
-        const p = points[0];
-        // delta from lastOffset origin
-        const dx = p.x - (imgRef.current?.getBoundingClientRect().left || 0);
-        const dy = p.y - (imgRef.current?.getBoundingClientRect().top || 0);
-        // Use movementX/Y instead (smoother)
         // @ts-ignore
         const movementX = e.movementX ?? 0;
         // @ts-ignore
         const movementY = e.movementY ?? 0;
-        setOffset((o) => ({ x: clamp(o.x + movementX, -4000, 4000), y: clamp(o.y + movementY, -4000, 4000) }));
+        // Dynamically adjust pan limits based on zoom level
+        const maxPan = 3000 * (scale / 2);
+        setOffset((o) => ({ x: clamp(o.x + movementX, -maxPan, maxPan), y: clamp(o.y + movementY, -maxPan, maxPan) }));
       }
     }
   };
