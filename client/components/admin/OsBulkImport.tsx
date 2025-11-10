@@ -334,10 +334,20 @@ City Electrical Works,9876543210,Model Town Rohtak,28.8955,76.6066,https://examp
 
           {err && <div className="text-red-600 text-sm mt-2">{err}</div>}
 
+          {!selectedCategory || !selectedSubcategory ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+              <p className="text-blue-700 text-sm">
+                ℹ️ Please select category and subcategory above before uploading
+              </p>
+            </div>
+          ) : null}
+
           <Button
             onClick={handleUpload}
-            disabled={!file || uploading}
-            className="w-full bg-[#C70000] hover:bg-[#A60000]"
+            disabled={
+              !file || uploading || !selectedCategory || !selectedSubcategory
+            }
+            className="w-full bg-[#C70000] hover:bg-[#A60000] disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {uploading ? (
               <>
