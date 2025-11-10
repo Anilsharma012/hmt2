@@ -557,6 +557,20 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
                     <p className="text-sm text-gray-500">
                       {category.description}
                     </p>
+                    {category.excelFile && (
+                      <div className="mt-2 flex items-center space-x-2 text-xs text-blue-600">
+                        <FileText className="h-3 w-3" />
+                        <span>{category.excelFile.fileName}</span>
+                        <a
+                          href={category.excelFile.fileUrl}
+                          download
+                          className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                        >
+                          <Download className="h-3 w-3" />
+                          Download
+                        </a>
+                      </div>
+                    )}
                     <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1">
                       <span>Slug: {category.slug}</span>
                       <span>Order: {category.order}</span>
