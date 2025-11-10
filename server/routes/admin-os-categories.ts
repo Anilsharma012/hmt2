@@ -256,3 +256,89 @@ export const deleteOsCategory: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// Upload Excel file for category or subcategory
+export const uploadExcelFile: RequestHandler = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "No file uploaded",
+      });
+    }
+
+    const { categoryId, subcategoryId } = req.body;
+
+    if (!categoryId && !subcategoryId) {
+      return res.status(400).json({
+        success: false,
+        error: "Either categoryId or subcategoryId is required",
+      });
+    }
+
+    const db = getDatabase();
+    const fileUrl = `/uploads/category-excel/${path.basename(req.file.path)}`;
+    const fileData = {
+      fileName: req.file.originalname,
+      fileUrl,
+      uploadedAt: new Date(),
+    };
+
+    if (subcategoryId) {
+      if (!ObjectId.isValid(subcategoryId)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid subcategory ID",
+        });
+      }
+
+      const result = await db
+        .collection("os_subcategories")
+        .updateOne(
+          { _id: new ObjectId(subcategoryId) },
+          { $set: { excelFile: fileData, updatedAt: new Date() } }
+        );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({
+          success: false,
+          error: "Subcategory not found",
+        });
+      }
+    } else if (categoryId) {
+      if (!ObjectId.isValid(categoryId)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid category ID",
+        });
+      }
+
+      const result = await db
+        .collection("os_categories")
+        .updateOne(
+          { _id: new ObjectId(categoryId) },
+          { $set: { excelFile: fileData, updatedAt: new Date() } }
+        );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({
+          success: false,
+          error: "Category not found",
+        });
+      }
+    }
+
+    const response: ApiResponse<{ excelFile: typeof fileData }> = {
+      success: true,
+      data: { excelFile: fileData },
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error uploading Excel file:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to upload Excel file",
+    });
+  }
+};
