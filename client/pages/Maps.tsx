@@ -39,14 +39,18 @@ export default function Maps() {
     pointersRef.current.clear();
   }, []);
 
-  const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(min, val));
+  const clamp = (val: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, val));
 
-  const openViewer = useCallback((idx: number) => {
-    setViewerIndex(idx);
-    setViewerOpen(true);
-    // reset any previous transforms
-    resetTransform();
-  }, [resetTransform]);
+  const openViewer = useCallback(
+    (idx: number) => {
+      setViewerIndex(idx);
+      setViewerOpen(true);
+      // reset any previous transforms
+      resetTransform();
+    },
+    [resetTransform],
+  );
 
   const closeViewer = useCallback(() => {
     setViewerOpen(false);
@@ -119,7 +123,10 @@ export default function Maps() {
   }, [items.length, viewerIndex]);
 
   // ---------- Gesture helpers ----------
-  function getTwoPointerDistance(a: { x: number; y: number }, b: { x: number; y: number }) {
+  function getTwoPointerDistance(
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+  ) {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return Math.hypot(dx, dy);
@@ -164,7 +171,10 @@ export default function Maps() {
       setScale(nextScale);
       // Keep offset reasonable based on current scale
       const maxOffset = 3000 * (nextScale / 4);
-      setOffset((prev) => ({ x: clamp(prev.x, -maxOffset, maxOffset), y: clamp(prev.y, -maxOffset, maxOffset) }));
+      setOffset((prev) => ({
+        x: clamp(prev.x, -maxOffset, maxOffset),
+        y: clamp(prev.y, -maxOffset, maxOffset),
+      }));
     } else if (points.length === 1) {
       // Pan when zoomed
       if (scale > 1) {
@@ -174,7 +184,10 @@ export default function Maps() {
         const movementY = e.movementY ?? 0;
         // Dynamically adjust pan limits based on zoom level
         const maxPan = 3000 * (scale / 2);
-        setOffset((o) => ({ x: clamp(o.x + movementX, -maxPan, maxPan), y: clamp(o.y + movementY, -maxPan, maxPan) }));
+        setOffset((o) => ({
+          x: clamp(o.x + movementX, -maxPan, maxPan),
+          y: clamp(o.y + movementY, -maxPan, maxPan),
+        }));
       }
     }
   };
@@ -223,7 +236,8 @@ export default function Maps() {
   // Image style derived from scale/offset
   const imgStyle: React.CSSProperties = {
     transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-    transition: pointersRef.current.size > 0 ? "none" : "transform 120ms ease-out",
+    transition:
+      pointersRef.current.size > 0 ? "none" : "transform 120ms ease-out",
     cursor: scale > 1 ? "grab" : "auto",
     touchAction: "none",
     imageRendering: "crisp-edges",
@@ -341,7 +355,9 @@ export default function Maps() {
             }}
             className="absolute top-3 right-3 md:top-5 md:right-5 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow px-3 py-1 text-sm transition-all hover:scale-110"
             aria-label={scale > 1 ? "Reset zoom" : "Close"}
-            title={scale > 1 ? "Click to reset zoom (then close)" : "Close image"}
+            title={
+              scale > 1 ? "Click to reset zoom (then close)" : "Close image"
+            }
           >
             {scale > 1 ? "Reset ↺" : "Close ✕"}
           </button>
@@ -384,7 +400,9 @@ export default function Maps() {
             <img
               ref={imgRef}
               src={items[viewerIndex]?.imageUrl}
-              alt={items[viewerIndex]?.title || items[viewerIndex]?.area || "map"}
+              alt={
+                items[viewerIndex]?.title || items[viewerIndex]?.area || "map"
+              }
               className="max-w-full max-h-full object-contain"
               draggable={false}
               style={imgStyle}
@@ -411,7 +429,8 @@ export default function Maps() {
               {items[viewerIndex]?.title || "Map"}
             </div>
             <div className="opacity-90">
-              {items[viewerIndex]?.area || "—"} · {viewerIndex + 1} / {items.length}
+              {items[viewerIndex]?.area || "—"} · {viewerIndex + 1} /{" "}
+              {items.length}
             </div>
             {scale > 1 && (
               <button
