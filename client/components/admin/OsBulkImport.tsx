@@ -38,7 +38,7 @@ export default function OsBulkImport() {
       setLoadingCategories(true);
       const res = await fetch("/api/os/categories?active=1");
       const data = await res.json();
-      setCategories(data.categories || []);
+      setCategories(data.data || []);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
       setError("Failed to load categories");
