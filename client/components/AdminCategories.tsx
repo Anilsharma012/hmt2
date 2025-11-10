@@ -10,6 +10,9 @@ import {
   ChevronDown,
   ChevronRight,
   Hash,
+  Upload,
+  FileText,
+  Download,
 } from "lucide-react";
 
 interface Subcategory {
