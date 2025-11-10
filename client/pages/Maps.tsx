@@ -226,6 +226,11 @@ export default function Maps() {
     transition: pointersRef.current.size > 0 ? "none" : "transform 120ms ease-out",
     cursor: scale > 1 ? "grab" : "auto",
     touchAction: "none",
+    imageRendering: "crisp-edges",
+    WebkitImageRendering: "crisp-edges" as any,
+    backfaceVisibility: "hidden",
+    WebkitBackfaceVisibility: "hidden" as any,
+    perspective: 1000,
   };
 
   return (
