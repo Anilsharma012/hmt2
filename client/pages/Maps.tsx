@@ -331,11 +331,19 @@ export default function Maps() {
           {/* Close */}
           <button
             type="button"
-            onClick={closeViewer}
-            className="absolute top-3 right-3 md:top-5 md:right-5 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow px-3 py-1 text-sm"
-            aria-label="Close"
+            onClick={() => {
+              // If zoomed in, reset zoom first before closing
+              if (scale > 1) {
+                resetTransform();
+              } else {
+                closeViewer();
+              }
+            }}
+            className="absolute top-3 right-3 md:top-5 md:right-5 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow px-3 py-1 text-sm transition-all hover:scale-110"
+            aria-label={scale > 1 ? "Reset zoom" : "Close"}
+            title={scale > 1 ? "Click to reset zoom (then close)" : "Close image"}
           >
-            Close ✕
+            {scale > 1 ? "Reset ↺" : "Close ✕"}
           </button>
 
           {/* Prev / Next */}
