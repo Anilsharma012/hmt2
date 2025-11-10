@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Upload, Download, FileText, CheckCircle, XCircle } from "lucide-react";
 import { safeReadResponse, getApiErrorMessage } from "../../lib/response-utils";
+import { OsCategory, OsSubcategory } from "@shared/types";
 
 export default function OsBulkImport() {
   const { token } = useAuth();
@@ -12,6 +13,55 @@ export default function OsBulkImport() {
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [err, setErr] = useState<string>("");
+  const [categories, setCategories] = useState<OsCategory[]>([]);
+  const [subcategories, setSubcategories] = useState<OsSubcategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Fetch subcategories when category changes
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchSubcategories(selectedCategory);
+      setSelectedSubcategory("");
+    }
+  }, [selectedCategory]);
+
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const res = await fetch("/api/os/categories?active=1");
+      const data = await res.json();
+      setCategories(data.categories || []);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+      setError("Failed to load categories");
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  const fetchSubcategories = async (categorySlug: string) => {
+    try {
+      setLoadingSubcategories(true);
+      const res = await fetch(
+        `/api/os/subcategories?category=${categorySlug}&active=1`
+      );
+      const data = await res.json();
+      setSubcategories(data.subcategories || []);
+    } catch (error) {
+      console.error("Failed to fetch subcategories:", error);
+      setError("Failed to load subcategories");
+    } finally {
+      setLoadingSubcategories(false);
+    }
+  }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
