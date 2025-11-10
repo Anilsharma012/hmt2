@@ -940,6 +940,10 @@ export default function CategoryProperties() {
                           {property.contactInfo?.name || "Owner"}
                         </span>
                         <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // TODO: Call functionality
+                          }}
                           size="sm"
                           className="bg-[#C70000] hover:bg-[#A60000] text-white"
                         >
