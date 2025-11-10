@@ -322,14 +322,23 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
         <h1 className="text-2xl font-bold text-gray-900">
           Categories Management
         </h1>
-        <Button
-          data-testid="add-category-btn"
-          onClick={() => setShowAddForm(true)}
-          className="bg-[#C70000] hover:bg-[#A60000] text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Category
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            onClick={() => setShowExcelUpload(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Excel
+          </Button>
+          <Button
+            data-testid="add-category-btn"
+            onClick={() => setShowAddForm(true)}
+            className="bg-[#C70000] hover:bg-[#A60000] text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Category
+          </Button>
+        </div>
       </div>
 
       {/* Add Category Form */}
