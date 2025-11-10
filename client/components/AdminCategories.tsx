@@ -341,6 +341,101 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
         </div>
       </div>
 
+      {/* Excel Upload Form */}
+      {showExcelUpload && (
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold mb-4">Upload Excel File</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Select File
+              </label>
+              <Input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700"
+              />
+              {selectedFile && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Selected: {selectedFile.name}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Select Category
+              </label>
+              <select
+                value={uploadingTarget.categoryId || ""}
+                onChange={(e) =>
+                  setUploadingTarget({
+                    categoryId: e.target.value,
+                    subcategoryId: undefined,
+                  })
+                }
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="">-- Select Category --</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {uploadingTarget.categoryId && (
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Select Subcategory (Optional)
+                </label>
+                <select
+                  value={uploadingTarget.subcategoryId || ""}
+                  onChange={(e) =>
+                    setUploadingTarget({
+                      ...uploadingTarget,
+                      subcategoryId: e.target.value || undefined,
+                    })
+                  }
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">-- Select Subcategory (Optional) --</option>
+                  {categories
+                    .find((c) => c._id === uploadingTarget.categoryId)
+                    ?.subcategories.map((subcat) => (
+                      <option key={subcat.id} value={subcat.id}>
+                        {subcat.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex space-x-2">
+              <Button
+                onClick={handleExcelFileUpload}
+                disabled={uploading || !selectedFile}
+                className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+              >
+                {uploading ? "Uploading..." : "Upload File"}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowExcelUpload(false);
+                  setSelectedFile(null);
+                  setUploadingTarget({});
+                }}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add Category Form */}
       {showAddForm && (
         <div
