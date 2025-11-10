@@ -73,6 +73,8 @@ import {
   createOsCategory,
   updateOsCategory,
   deleteOsCategory,
+  excelUpload,
+  uploadExcelFile,
 } from "./routes/admin-os-categories";
 
 import {
