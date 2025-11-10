@@ -67,36 +67,62 @@ function parseCSV(text: string): Record<string, string>[] {
 r.post("/os-listings/import", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "file required" });
+
+    // Extract category and subcategory from query parameters
+    const requestCategory = (req.query.category || "")
+      .toString()
+      .toLowerCase()
+      .trim();
+    const requestSubcategory = (req.query.subcategory || "")
+      .toString()
+      .toLowerCase()
+      .trim();
+
+    // Parse CSV
     const csv = req.file.buffer.toString("utf8");
     const rows = parseCSV(csv);
 
-    // Normalize field names (categorySlug -> catSlug, etc.)
-    const normalizedRows = rows.map((row) => {
-      const normalized = { ...row };
-      if (row.categorySlug && !row.catSlug)
-        normalized.catSlug = row.categorySlug;
-      if (row.subcategorySlug && !row.subSlug)
-        normalized.subSlug = row.subcategorySlug;
-      return normalized;
-    });
+    // Also check if no rows provided
+    if (!rows || rows.length === 0) {
+      return res.status(400).json({ error: "CSV file is empty" });
+    }
 
-    const required = ["catSlug", "subSlug", "name", "phone", "address"];
-    const miss = required.filter((k) => !(k in (normalizedRows[0] || {})));
-    if (miss.length)
-      return res
-        .status(400)
-        .json({ error: `missing columns: ${miss.join(",")}` });
+    // Determine required columns based on whether category/subcategory are provided
+    const csvRequired =
+      requestCategory && requestSubcategory
+        ? ["name", "phone", "address"]
+        : ["catSlug", "subSlug", "name", "phone", "address"];
+
+    const firstRow = rows[0] || {};
+    const miss = csvRequired.filter((k) => !(k in firstRow));
+
+    if (miss.length) {
+      return res.status(400).json({
+        error: `missing columns: ${miss.join(",")}`,
+      });
+    }
+
+    // Validate that category and subcategory are available
+    if (!requestCategory || !requestSubcategory) {
+      return res.status(400).json({
+        error: "Category and subcategory must be selected before uploading CSV",
+      });
+    }
 
     let created = 0,
       updated = 0;
     const errors: any[] = [];
     const db = getDatabase();
 
-    for (const r of normalizedRows) {
+    for (const r of rows) {
       try {
-        const catSlug = (r.catSlug || "").toLowerCase();
-        const subSlug = (r.subSlug || "").toLowerCase();
-        if (!catSlug || !subSlug) throw new Error("catSlug/subSlug required");
+        // Use request category/subcategory (they are mandatory now)
+        const catSlug = requestCategory.toLowerCase();
+        const subSlug = requestSubcategory.toLowerCase();
+
+        if (!catSlug || !subSlug) {
+          throw new Error("Category and subcategory are required");
+        }
 
         // Find or create category
         let cat = await db
