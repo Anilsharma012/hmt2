@@ -351,6 +351,10 @@ export default function CategoryProperties() {
     return "Properties";
   };
 
+  const handlePropertyCardClick = (propertyId: string) => {
+    navigate(`/property/${propertyId}`);
+  };
+
   /** ---------------- Loading ---------------- */
   if (loading) {
     return (
