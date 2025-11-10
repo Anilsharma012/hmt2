@@ -200,6 +200,11 @@ export interface OsCategory {
   slug: string;
   name: string;
   active: boolean;
+  excelFile?: {
+    fileName: string;
+    fileUrl: string;
+    uploadedAt: Date;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -210,6 +215,11 @@ export interface OsSubcategory {
   slug: string;
   name: string;
   active: boolean;
+  excelFile?: {
+    fileName: string;
+    fileUrl: string;
+    uploadedAt: Date;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }

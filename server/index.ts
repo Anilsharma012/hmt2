@@ -73,6 +73,8 @@ import {
   createOsCategory,
   updateOsCategory,
   deleteOsCategory,
+  excelUpload,
+  uploadExcelFile,
 } from "./routes/admin-os-categories";
 
 import {
@@ -1510,6 +1512,13 @@ export function createServer() {
     requireAdmin,
     deleteOsCategory,
   );
+  app.post(
+    "/api/admin/os-categories/upload-excel",
+    authenticateToken,
+    requireAdmin,
+    excelUpload.single("file"),
+    uploadExcelFile,
+  );
 
   app.get(
     "/api/admin/os-subcategories",
@@ -1528,6 +1537,13 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     updateOsSubcategory,
+  );
+  app.post(
+    "/api/admin/os-subcategories/upload-excel",
+    authenticateToken,
+    requireAdmin,
+    excelUpload.single("file"),
+    uploadExcelFile,
   );
   app.delete(
     "/api/admin/os-subcategories/:subcategoryId",

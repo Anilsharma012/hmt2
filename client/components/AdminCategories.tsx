@@ -10,6 +10,9 @@ import {
   ChevronDown,
   ChevronRight,
   Hash,
+  Upload,
+  FileText,
+  Download,
 } from "lucide-react";
 
 interface Subcategory {
@@ -18,6 +21,13 @@ interface Subcategory {
   slug: string;
   description: string;
   count?: number;
+  excelFile?: ExcelFile;
+}
+
+interface ExcelFile {
+  fileName: string;
+  fileUrl: string;
+  uploadedAt: Date;
 }
 
 interface Category {
@@ -30,6 +40,7 @@ interface Category {
   order: number;
   active: boolean;
   count?: number;
+  excelFile?: ExcelFile;
 }
 
 interface AdminCategoriesProps {
@@ -53,6 +64,13 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
   );
+  const [showExcelUpload, setShowExcelUpload] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingTarget, setUploadingTarget] = useState<{
+    categoryId?: string;
+    subcategoryId?: string;
+  }>({});
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -66,14 +84,16 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
           Authorization: `Bearer ${token}`,
         },
       });
-      const { data } = await (await import('../lib/response-utils')).safeReadResponse(response);
+      const { data } = await (
+        await import("../lib/response-utils")
+      ).safeReadResponse(response);
 
       if (data && data.success) {
         const list = Array.isArray(data.data)
           ? data.data
           : Array.isArray(data.data?.categories)
-          ? data.data.categories
-          : [];
+            ? data.data.categories
+            : [];
         const normalized = list.map((cat: any) => ({
           ...cat,
           icon: cat.icon ?? cat.iconUrl,
@@ -107,12 +127,18 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
         body: JSON.stringify(payload),
       });
 
-      const { data } = await (await import('../lib/response-utils')).safeReadResponse(response);
+      const { data } = await (
+        await import("../lib/response-utils")
+      ).safeReadResponse(response);
 
       if (data && data.success) {
         const createdCategoryId = data.data?.category?._id || data.data?._id;
         // create subcategories if any
-        if (newCategory.subcategories && newCategory.subcategories.length && createdCategoryId) {
+        if (
+          newCategory.subcategories &&
+          newCategory.subcategories.length &&
+          createdCategoryId
+        ) {
           for (let i = 0; i < (newCategory.subcategories || []).length; i++) {
             const sub = (newCategory.subcategories || [])[i];
             try {
@@ -137,7 +163,7 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
         }
 
         fetchCategories();
-        window.dispatchEvent(new Event('categories:updated'));
+        window.dispatchEvent(new Event("categories:updated"));
         setNewCategory({
           name: "",
           slug: "",
@@ -179,12 +205,14 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
         body: JSON.stringify(payload),
       });
 
-      const { data } = await (await import('../lib/response-utils')).safeReadResponse(response);
+      const { data } = await (
+        await import("../lib/response-utils")
+      ).safeReadResponse(response);
 
       if (data && data.success) {
         fetchCategories();
         setEditingCategory(null);
-        window.dispatchEvent(new Event('categories:updated'));
+        window.dispatchEvent(new Event("categories:updated"));
       }
     } catch (error) {
       console.error("Error updating category:", error);
@@ -204,11 +232,13 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
         },
       });
 
-      const { data } = await (await import('../lib/response-utils')).safeReadResponse(response);
+      const { data } = await (
+        await import("../lib/response-utils")
+      ).safeReadResponse(response);
 
       if (data && data.success) {
         fetchCategories();
-        window.dispatchEvent(new Event('categories:updated'));
+        window.dispatchEvent(new Event("categories:updated"));
       } else {
         alert((data && data.error) || "Failed to delete category");
       }
@@ -222,6 +252,61 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
+  };
+
+  const handleExcelFileUpload = async () => {
+    if (!selectedFile) {
+      alert("Please select a file");
+      return;
+    }
+
+    if (!uploadingTarget.categoryId && !uploadingTarget.subcategoryId) {
+      alert("Please select a category or subcategory");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      if (uploadingTarget.categoryId) {
+        formData.append("categoryId", uploadingTarget.categoryId);
+      }
+      if (uploadingTarget.subcategoryId) {
+        formData.append("subcategoryId", uploadingTarget.subcategoryId);
+      }
+
+      const endpoint = uploadingTarget.subcategoryId
+        ? "/api/admin/os-subcategories/upload-excel"
+        : "/api/admin/os-categories/upload-excel";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const { data } = await (
+        await import("../lib/response-utils")
+      ).safeReadResponse(response);
+
+      if (data && data.success) {
+        alert("Excel file uploaded successfully!");
+        fetchCategories();
+        setShowExcelUpload(false);
+        setSelectedFile(null);
+        setUploadingTarget({});
+      } else {
+        alert((data && data.error) || "Failed to upload file");
+      }
+    } catch (error) {
+      console.error("Error uploading Excel file:", error);
+      alert("Failed to upload Excel file");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const toggleCategoryExpanded = (categoryId: string) => {
@@ -251,15 +336,119 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
         <h1 className="text-2xl font-bold text-gray-900">
           Categories Management
         </h1>
-        <Button
-          data-testid="add-category-btn"
-          onClick={() => setShowAddForm(true)}
-          className="bg-[#C70000] hover:bg-[#A60000] text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Category
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            onClick={() => setShowExcelUpload(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Excel
+          </Button>
+          <Button
+            data-testid="add-category-btn"
+            onClick={() => setShowAddForm(true)}
+            className="bg-[#C70000] hover:bg-[#A60000] text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Category
+          </Button>
+        </div>
       </div>
+
+      {/* Excel Upload Form */}
+      {showExcelUpload && (
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold mb-4">Upload Excel File</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Select File
+              </label>
+              <Input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700"
+              />
+              {selectedFile && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Selected: {selectedFile.name}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Select Category
+              </label>
+              <select
+                value={uploadingTarget.categoryId || ""}
+                onChange={(e) =>
+                  setUploadingTarget({
+                    categoryId: e.target.value,
+                    subcategoryId: undefined,
+                  })
+                }
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="">-- Select Category --</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {uploadingTarget.categoryId && (
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Select Subcategory (Optional)
+                </label>
+                <select
+                  value={uploadingTarget.subcategoryId || ""}
+                  onChange={(e) =>
+                    setUploadingTarget({
+                      ...uploadingTarget,
+                      subcategoryId: e.target.value || undefined,
+                    })
+                  }
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">-- Select Subcategory (Optional) --</option>
+                  {categories
+                    .find((c) => c._id === uploadingTarget.categoryId)
+                    ?.subcategories.map((subcat) => (
+                      <option key={subcat.id} value={subcat.id}>
+                        {subcat.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex space-x-2">
+              <Button
+                onClick={handleExcelFileUpload}
+                disabled={uploading || !selectedFile}
+                className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+              >
+                {uploading ? "Uploading..." : "Upload File"}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowExcelUpload(false);
+                  setSelectedFile(null);
+                  setUploadingTarget({});
+                }}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Category Form */}
       {showAddForm && (
@@ -382,6 +571,20 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
                     <p className="text-sm text-gray-500">
                       {category.description}
                     </p>
+                    {category.excelFile && (
+                      <div className="mt-2 flex items-center space-x-2 text-xs text-blue-600">
+                        <FileText className="h-3 w-3" />
+                        <span>{category.excelFile.fileName}</span>
+                        <a
+                          href={category.excelFile.fileUrl}
+                          download
+                          className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                        >
+                          <Download className="h-3 w-3" />
+                          Download
+                        </a>
+                      </div>
+                    )}
                     <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1">
                       <span>Slug: {category.slug}</span>
                       <span>Order: {category.order}</span>
@@ -434,13 +637,27 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
                         key={subcategory.id}
                         className="flex items-center justify-between p-2 bg-gray-50 rounded"
                       >
-                        <div>
+                        <div className="flex-1">
                           <span className="font-medium">
                             {subcategory.name}
                           </span>
                           <p className="text-sm text-gray-500">
                             {subcategory.description}
                           </p>
+                          {subcategory.excelFile && (
+                            <div className="mt-2 flex items-center space-x-2 text-xs text-blue-600">
+                              <FileText className="h-3 w-3" />
+                              <span>{subcategory.excelFile.fileName}</span>
+                              <a
+                                href={subcategory.excelFile.fileUrl}
+                                download
+                                className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                              >
+                                <Download className="h-3 w-3" />
+                                Download
+                              </a>
+                            </div>
+                          )}
                           <span className="text-xs text-gray-400">
                             Slug: {subcategory.slug}
                           </span>

@@ -1,7 +1,52 @@
 import { RequestHandler } from "express";
 import { ObjectId } from "mongodb";
+import multer, { FileFilterCallback } from "multer";
+import path from "path";
+import fs from "fs";
 import { getDatabase } from "../db/mongodb";
 import { OsCategory, ApiResponse } from "@shared/types";
+
+// Configure multer for Excel file upload
+const uploadDir = "uploads/category-excel";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (_req, file, cb) => {
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    cb(null, `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`);
+  },
+});
+
+const fileFilter = (
+  _req: any,
+  file: Express.Multer.File,
+  cb: FileFilterCallback,
+) => {
+  const allowedMimes = [
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel",
+  ];
+  const allowedExts = [".xlsx", ".xls"];
+
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (allowedMimes.includes(file.mimetype) || allowedExts.includes(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only Excel files are allowed"));
+  }
+};
+
+export const excelUpload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+});
 
 // Get all categories
 export const getOsCategories: RequestHandler = async (req, res) => {
@@ -212,6 +257,92 @@ export const deleteOsCategory: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to delete category",
+    });
+  }
+};
+
+// Upload Excel file for category or subcategory
+export const uploadExcelFile: RequestHandler = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "No file uploaded",
+      });
+    }
+
+    const { categoryId, subcategoryId } = req.body;
+
+    if (!categoryId && !subcategoryId) {
+      return res.status(400).json({
+        success: false,
+        error: "Either categoryId or subcategoryId is required",
+      });
+    }
+
+    const db = getDatabase();
+    const fileUrl = `/uploads/category-excel/${path.basename(req.file.path)}`;
+    const fileData = {
+      fileName: req.file.originalname,
+      fileUrl,
+      uploadedAt: new Date(),
+    };
+
+    if (subcategoryId) {
+      if (!ObjectId.isValid(subcategoryId)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid subcategory ID",
+        });
+      }
+
+      const result = await db
+        .collection("os_subcategories")
+        .updateOne(
+          { _id: new ObjectId(subcategoryId) },
+          { $set: { excelFile: fileData, updatedAt: new Date() } },
+        );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({
+          success: false,
+          error: "Subcategory not found",
+        });
+      }
+    } else if (categoryId) {
+      if (!ObjectId.isValid(categoryId)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid category ID",
+        });
+      }
+
+      const result = await db
+        .collection("os_categories")
+        .updateOne(
+          { _id: new ObjectId(categoryId) },
+          { $set: { excelFile: fileData, updatedAt: new Date() } },
+        );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({
+          success: false,
+          error: "Category not found",
+        });
+      }
+    }
+
+    const response: ApiResponse<{ excelFile: typeof fileData }> = {
+      success: true,
+      data: { excelFile: fileData },
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error uploading Excel file:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to upload Excel file",
     });
   }
 };
