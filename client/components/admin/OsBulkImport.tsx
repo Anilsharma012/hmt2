@@ -51,10 +51,10 @@ export default function OsBulkImport() {
     try {
       setLoadingSubcategories(true);
       const res = await fetch(
-        `/api/os/subcategories?category=${categorySlug}&active=1`
+        `/api/os/subcategories?cat=${categorySlug}&active=1`
       );
       const data = await res.json();
-      setSubcategories(data.subcategories || []);
+      setSubcategories(data.data || []);
     } catch (error) {
       console.error("Failed to fetch subcategories:", error);
       setError("Failed to load subcategories");
