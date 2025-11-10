@@ -1538,6 +1538,13 @@ export function createServer() {
     requireAdmin,
     updateOsSubcategory,
   );
+  app.post(
+    "/api/admin/os-subcategories/upload-excel",
+    authenticateToken,
+    requireAdmin,
+    excelUpload.single("file"),
+    uploadExcelFile,
+  );
   app.delete(
     "/api/admin/os-subcategories/:subcategoryId",
     authenticateToken,
