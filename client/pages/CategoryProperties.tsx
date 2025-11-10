@@ -71,6 +71,7 @@ const mohallas = [
 
 /** ---------------- Component ---------------- */
 export default function CategoryProperties() {
+  const navigate = useNavigate();
   const { category, subcategory, propertyType, slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
