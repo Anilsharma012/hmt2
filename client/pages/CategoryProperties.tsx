@@ -808,7 +808,8 @@ export default function CategoryProperties() {
                 {properties.map((property) => (
                   <div
                     key={property._id}
-                    className={`prop-card bg-white rounded-lg shadow-sm overflow-hidden ${
+                    onClick={() => handlePropertyCardClick(property._id)}
+                    className={`prop-card bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer transition-all hover:shadow-md hover:scale-105 ${
                       viewMode === "grid" ? "flex flex-col" : "flex"
                     }`}
                   >
