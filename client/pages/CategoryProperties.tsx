@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Filter,
@@ -71,6 +71,7 @@ const mohallas = [
 
 /** ---------------- Component ---------------- */
 export default function CategoryProperties() {
+  const navigate = useNavigate();
   const { category, subcategory, propertyType, slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -348,6 +349,10 @@ export default function CategoryProperties() {
         .replace(/\b\w/g, (l) => l.toUpperCase());
     }
     return "Properties";
+  };
+
+  const handlePropertyCardClick = (propertyId: string) => {
+    navigate(`/property/${propertyId}`);
   };
 
   /** ---------------- Loading ---------------- */
@@ -803,7 +808,8 @@ export default function CategoryProperties() {
                 {properties.map((property) => (
                   <div
                     key={property._id}
-                    className={`prop-card bg-white rounded-lg shadow-sm overflow-hidden ${
+                    onClick={() => handlePropertyCardClick(property._id)}
+                    className={`prop-card bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer transition-all hover:shadow-md hover:scale-105 ${
                       viewMode === "grid" ? "flex flex-col" : "flex"
                     }`}
                   >
@@ -934,6 +940,10 @@ export default function CategoryProperties() {
                           {property.contactInfo?.name || "Owner"}
                         </span>
                         <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // TODO: Call functionality
+                          }}
                           size="sm"
                           className="bg-[#C70000] hover:bg-[#A60000] text-white"
                         >

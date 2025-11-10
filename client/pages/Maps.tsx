@@ -39,14 +39,18 @@ export default function Maps() {
     pointersRef.current.clear();
   }, []);
 
-  const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(min, val));
+  const clamp = (val: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, val));
 
-  const openViewer = useCallback((idx: number) => {
-    setViewerIndex(idx);
-    setViewerOpen(true);
-    // reset any previous transforms
-    resetTransform();
-  }, [resetTransform]);
+  const openViewer = useCallback(
+    (idx: number) => {
+      setViewerIndex(idx);
+      setViewerOpen(true);
+      // reset any previous transforms
+      resetTransform();
+    },
+    [resetTransform],
+  );
 
   const closeViewer = useCallback(() => {
     setViewerOpen(false);
@@ -119,7 +123,10 @@ export default function Maps() {
   }, [items.length, viewerIndex]);
 
   // ---------- Gesture helpers ----------
-  function getTwoPointerDistance(a: { x: number; y: number }, b: { x: number; y: number }) {
+  function getTwoPointerDistance(
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+  ) {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return Math.hypot(dx, dy);
@@ -134,8 +141,8 @@ export default function Maps() {
     // Double-tap / double-click zoom toggle
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
-      // toggle between 1 and 2
-      const newScale = scale > 1 ? 1 : 2;
+      // Double-tap zooms to 2x, double-tap again to reset to 1x
+      const newScale = scale > 1.5 ? 1 : 2;
       setScale(newScale);
       setOffset({ x: 0, y: 0 });
       setLastOffset({ x: 0, y: 0 });
@@ -151,7 +158,7 @@ export default function Maps() {
 
     const points = [...pointersRef.current.values()];
     if (points.length === 2) {
-      // Pinch
+      // Pinch - calculate scale with improved responsiveness
       const d = getTwoPointerDistance(points[0], points[1]);
       if (baseDistanceRef.current == null) {
         baseDistanceRef.current = d;
@@ -159,23 +166,28 @@ export default function Maps() {
         return;
       }
       const factor = d / (baseDistanceRef.current || d);
-      let nextScale = clamp(baseScaleRef.current * factor, 1, 5);
+      // Clamp to reasonable zoom range (1-4x for clarity at all zoom levels)
+      let nextScale = clamp(baseScaleRef.current * factor, 1, 4);
       setScale(nextScale);
-      // Keep offset reasonable (optional: simple damp)
-      setOffset((prev) => ({ x: clamp(prev.x, -2000, 2000), y: clamp(prev.y, -2000, 2000) }));
+      // Keep offset reasonable based on current scale
+      const maxOffset = 3000 * (nextScale / 4);
+      setOffset((prev) => ({
+        x: clamp(prev.x, -maxOffset, maxOffset),
+        y: clamp(prev.y, -maxOffset, maxOffset),
+      }));
     } else if (points.length === 1) {
       // Pan when zoomed
       if (scale > 1) {
-        const p = points[0];
-        // delta from lastOffset origin
-        const dx = p.x - (imgRef.current?.getBoundingClientRect().left || 0);
-        const dy = p.y - (imgRef.current?.getBoundingClientRect().top || 0);
-        // Use movementX/Y instead (smoother)
         // @ts-ignore
         const movementX = e.movementX ?? 0;
         // @ts-ignore
         const movementY = e.movementY ?? 0;
-        setOffset((o) => ({ x: clamp(o.x + movementX, -4000, 4000), y: clamp(o.y + movementY, -4000, 4000) }));
+        // Dynamically adjust pan limits based on zoom level
+        const maxPan = 3000 * (scale / 2);
+        setOffset((o) => ({
+          x: clamp(o.x + movementX, -maxPan, maxPan),
+          y: clamp(o.y + movementY, -maxPan, maxPan),
+        }));
       }
     }
   };
@@ -197,9 +209,10 @@ export default function Maps() {
     // Smooth zoom around cursor (desktop)
     const delta = e.deltaY;
     if (Math.abs(delta) > 0) {
+      e.preventDefault();
       const direction = delta > 0 ? -1 : 1;
-      const zoomStep = 0.1 * direction;
-      const next = clamp(scale + zoomStep, 1, 5);
+      const zoomStep = 0.08 * direction;
+      const next = clamp(scale + zoomStep, 1, 4);
       setScale(next);
     }
   };
@@ -223,9 +236,15 @@ export default function Maps() {
   // Image style derived from scale/offset
   const imgStyle: React.CSSProperties = {
     transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-    transition: pointersRef.current.size > 0 ? "none" : "transform 120ms ease-out",
+    transition:
+      pointersRef.current.size > 0 ? "none" : "transform 120ms ease-out",
     cursor: scale > 1 ? "grab" : "auto",
     touchAction: "none",
+    imageRendering: "crisp-edges",
+    WebkitImageRendering: "crisp-edges" as any,
+    backfaceVisibility: "hidden",
+    WebkitBackfaceVisibility: "hidden" as any,
+    perspective: 1000,
   };
 
   return (
@@ -318,17 +337,29 @@ export default function Maps() {
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
-            if (e.target === e.currentTarget) closeViewer();
+            // Only close if clicking on the backdrop (not zoomed in)
+            // Prevent closing if user has zoomed in (scale > 1)
+            if (e.target === e.currentTarget && scale <= 1) closeViewer();
           }}
         >
           {/* Close */}
           <button
             type="button"
-            onClick={closeViewer}
-            className="absolute top-3 right-3 md:top-5 md:right-5 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow px-3 py-1 text-sm"
-            aria-label="Close"
+            onClick={() => {
+              // If zoomed in, reset zoom first before closing
+              if (scale > 1) {
+                resetTransform();
+              } else {
+                closeViewer();
+              }
+            }}
+            className="absolute top-3 right-3 md:top-5 md:right-5 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow px-3 py-1 text-sm transition-all hover:scale-110"
+            aria-label={scale > 1 ? "Reset zoom" : "Close"}
+            title={
+              scale > 1 ? "Click to reset zoom (then close)" : "Close image"
+            }
           >
-            Close ✕
+            {scale > 1 ? "Reset ↺" : "Close ✕"}
           </button>
 
           {/* Prev / Next */}
@@ -357,6 +388,9 @@ export default function Maps() {
           <div
             ref={containerRef}
             className="w-[92vw] h-[82vh] flex items-center justify-center p-2 touch-none select-none"
+            style={{
+              backgroundColor: "#000",
+            }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -366,12 +400,28 @@ export default function Maps() {
             <img
               ref={imgRef}
               src={items[viewerIndex]?.imageUrl}
-              alt={items[viewerIndex]?.title || items[viewerIndex]?.area || "map"}
+              alt={
+                items[viewerIndex]?.title || items[viewerIndex]?.area || "map"
+              }
               className="max-w-full max-h-full object-contain"
               draggable={false}
               style={imgStyle}
             />
           </div>
+
+          {/* Zoom Level Indicator */}
+          {scale > 1 && (
+            <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded">
+              {Math.round(scale * 100)}%
+            </div>
+          )}
+
+          {/* Zoom instructions (shown when not zoomed) */}
+          {scale === 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-center text-white text-xs px-2 py-1 bg-black/40 rounded max-w-xs">
+              📱 Double-tap or pinch to zoom | 🖱️ Scroll to zoom | Drag to pan
+            </div>
+          )}
 
           {/* Caption + Reset */}
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-center text-white text-sm px-3 py-1 bg-black/40 rounded">
@@ -379,12 +429,13 @@ export default function Maps() {
               {items[viewerIndex]?.title || "Map"}
             </div>
             <div className="opacity-90">
-              {items[viewerIndex]?.area || "—"} · {viewerIndex + 1} / {items.length}
+              {items[viewerIndex]?.area || "—"} · {viewerIndex + 1} /{" "}
+              {items.length}
             </div>
             {scale > 1 && (
               <button
                 onClick={resetTransform}
-                className="mt-2 text-xs underline decoration-dotted"
+                className="mt-2 text-xs underline decoration-dotted hover:text-gray-200"
               >
                 Reset zoom
               </button>
