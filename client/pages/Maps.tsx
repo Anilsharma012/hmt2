@@ -362,6 +362,9 @@ export default function Maps() {
           <div
             ref={containerRef}
             className="w-[92vw] h-[82vh] flex items-center justify-center p-2 touch-none select-none"
+            style={{
+              backgroundColor: "#000",
+            }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
