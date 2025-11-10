@@ -70,6 +70,14 @@ r.post("/os-listings/import", upload.single("file"), async (req, res) => {
     const csv = req.file.buffer.toString("utf8");
     const rows = parseCSV(csv);
 
+    // Get category and subcategory from request (either form fields or body)
+    const requestCategory = (req.body.category || req.query.category || "")
+      .toLowerCase()
+      .trim();
+    const requestSubcategory = (req.body.subcategory || req.query.subcategory || "")
+      .toLowerCase()
+      .trim();
+
     // Normalize field names (categorySlug -> catSlug, etc.)
     const normalizedRows = rows.map((row) => {
       const normalized = { ...row };
@@ -80,12 +88,25 @@ r.post("/os-listings/import", upload.single("file"), async (req, res) => {
       return normalized;
     });
 
-    const required = ["catSlug", "subSlug", "name", "phone", "address"];
-    const miss = required.filter((k) => !(k in (normalizedRows[0] || {})));
+    // If category/subcategory provided in request, they are optional in CSV
+    const csvRequired = requestCategory && requestSubcategory
+      ? ["name", "phone", "address"]
+      : ["catSlug", "subSlug", "name", "phone", "address"];
+
+    const miss = csvRequired.filter((k) => !(k in (normalizedRows[0] || {})));
     if (miss.length)
       return res
         .status(400)
         .json({ error: `missing columns: ${miss.join(",")}` });
+
+    // Validate that category and subcategory are provided (either in request or CSV)
+    if (!requestCategory || !requestSubcategory) {
+      if (!normalizedRows[0]?.catSlug || !normalizedRows[0]?.subSlug) {
+        return res.status(400).json({
+          error: "Category and subcategory must be specified (either in form or CSV)",
+        });
+      }
+    }
 
     let created = 0,
       updated = 0;
@@ -94,8 +115,9 @@ r.post("/os-listings/import", upload.single("file"), async (req, res) => {
 
     for (const r of normalizedRows) {
       try {
-        const catSlug = (r.catSlug || "").toLowerCase();
-        const subSlug = (r.subSlug || "").toLowerCase();
+        // Use request category/subcategory if provided, otherwise use CSV values
+        const catSlug = (requestCategory || r.catSlug || "").toLowerCase();
+        const subSlug = (requestSubcategory || r.subSlug || "").toLowerCase();
         if (!catSlug || !subSlug) throw new Error("catSlug/subSlug required");
 
         // Find or create category
