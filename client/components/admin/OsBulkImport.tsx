@@ -417,15 +417,16 @@ City Electrical Works,9876543210,Model Town Rohtak,28.8955,76.6066,https://examp
           <h4 className="font-medium text-blue-900 mb-2">Important Notes:</h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>
-              • Categories and subcategories will be auto-created if they don't
-              exist
+              • All rows will be imported under the selected category and
+              subcategory
             </li>
             <li>
-              • All coordinates should be in decimal format (e.g., 28.8955,
-              76.6066)
+              • Coordinates should be in decimal format (e.g., 28.8955, 76.6066)
             </li>
             <li>• Times should be in 24-hour format (e.g., 09:00, 18:00)</li>
+            <li>• Phone numbers should be numeric (10-15 digits)</li>
             <li>• Photo URLs should be publicly accessible</li>
+            <li>• Do NOT include catSlug or subSlug columns in your CSV</li>
             <li>• Duplicate entries will create separate listings</li>
           </ul>
         </CardContent>
