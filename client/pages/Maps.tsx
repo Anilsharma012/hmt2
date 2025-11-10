@@ -196,9 +196,10 @@ export default function Maps() {
     // Smooth zoom around cursor (desktop)
     const delta = e.deltaY;
     if (Math.abs(delta) > 0) {
+      e.preventDefault();
       const direction = delta > 0 ? -1 : 1;
-      const zoomStep = 0.1 * direction;
-      const next = clamp(scale + zoomStep, 1, 5);
+      const zoomStep = 0.08 * direction;
+      const next = clamp(scale + zoomStep, 1, 4);
       setScale(next);
     }
   };
