@@ -88,6 +88,8 @@ export default function OsBulkImport() {
     try {
       const fd = new FormData();
       fd.append("file", file);
+      fd.append("category", selectedCategory);
+      fd.append("subcategory", selectedSubcategory);
 
       const r = await fetch(`/api/admin/os-listings/import`, {
         method: "POST",
