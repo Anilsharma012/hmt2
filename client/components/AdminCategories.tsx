@@ -21,6 +21,7 @@ interface Subcategory {
   slug: string;
   description: string;
   count?: number;
+  excelFile?: ExcelFile;
 }
 
 interface ExcelFile {
