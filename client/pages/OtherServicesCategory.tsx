@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { ArrowLeft, ArrowRight, Wrench } from "lucide-react";
+import { ArrowLeft, ArrowRight, Wrench, Download, FileText } from "lucide-react";
 import { OsSubcategory } from "@shared/types";
 
 export default function OtherServicesCategory() {
