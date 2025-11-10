@@ -64,6 +64,13 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
   );
+  const [showExcelUpload, setShowExcelUpload] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingTarget, setUploadingTarget] = useState<{
+    categoryId?: string;
+    subcategoryId?: string;
+  }>({});
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchCategories();
