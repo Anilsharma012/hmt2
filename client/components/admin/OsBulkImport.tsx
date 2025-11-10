@@ -51,7 +51,7 @@ export default function OsBulkImport() {
     try {
       setLoadingSubcategories(true);
       const res = await fetch(
-        `/api/os/subcategories?cat=${categorySlug}&active=1`
+        `/api/os/subcategories?cat=${categorySlug}&active=1`,
       );
       const data = await res.json();
       setSubcategories(data.data || []);
@@ -61,7 +61,7 @@ export default function OsBulkImport() {
     } finally {
       setLoadingSubcategories(false);
     }
-  }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -101,7 +101,7 @@ export default function OsBulkImport() {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: fd,
-        }
+        },
       );
 
       const data = await r.json().catch(() => ({}));

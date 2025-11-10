@@ -69,8 +69,14 @@ r.post("/os-listings/import", upload.single("file"), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "file required" });
 
     // Extract category and subcategory from query parameters
-    const requestCategory = (req.query.category || "").toString().toLowerCase().trim();
-    const requestSubcategory = (req.query.subcategory || "").toString().toLowerCase().trim();
+    const requestCategory = (req.query.category || "")
+      .toString()
+      .toLowerCase()
+      .trim();
+    const requestSubcategory = (req.query.subcategory || "")
+      .toString()
+      .toLowerCase()
+      .trim();
 
     // Parse CSV
     const csv = req.file.buffer.toString("utf8");
@@ -78,22 +84,21 @@ r.post("/os-listings/import", upload.single("file"), async (req, res) => {
 
     // Also check if no rows provided
     if (!rows || rows.length === 0) {
-      return res
-        .status(400)
-        .json({ error: "CSV file is empty" });
+      return res.status(400).json({ error: "CSV file is empty" });
     }
 
     // Determine required columns based on whether category/subcategory are provided
-    const csvRequired = requestCategory && requestSubcategory
-      ? ["name", "phone", "address"]
-      : ["catSlug", "subSlug", "name", "phone", "address"];
+    const csvRequired =
+      requestCategory && requestSubcategory
+        ? ["name", "phone", "address"]
+        : ["catSlug", "subSlug", "name", "phone", "address"];
 
     const firstRow = rows[0] || {};
     const miss = csvRequired.filter((k) => !(k in firstRow));
 
     if (miss.length) {
       return res.status(400).json({
-        error: `missing columns: ${miss.join(",")}`
+        error: `missing columns: ${miss.join(",")}`,
       });
     }
 
