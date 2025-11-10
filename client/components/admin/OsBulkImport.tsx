@@ -88,14 +88,21 @@ export default function OsBulkImport() {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("category", selectedCategory);
-      fd.append("subcategory", selectedSubcategory);
 
-      const r = await fetch(`/api/admin/os-listings/import`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
+      // Send category and subcategory as query parameters (multer doesn't parse form fields automatically)
+      const queryParams = new URLSearchParams({
+        category: selectedCategory,
+        subcategory: selectedSubcategory,
       });
+
+      const r = await fetch(
+        `/api/admin/os-listings/import?${queryParams.toString()}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        }
+      );
 
       const data = await r.json().catch(() => ({}));
 
