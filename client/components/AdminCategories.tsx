@@ -242,6 +242,59 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
       .replace(/(^-|-$)/g, "");
   };
 
+  const handleExcelFileUpload = async () => {
+    if (!selectedFile) {
+      alert("Please select a file");
+      return;
+    }
+
+    if (!uploadingTarget.categoryId && !uploadingTarget.subcategoryId) {
+      alert("Please select a category or subcategory");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      if (uploadingTarget.categoryId) {
+        formData.append("categoryId", uploadingTarget.categoryId);
+      }
+      if (uploadingTarget.subcategoryId) {
+        formData.append("subcategoryId", uploadingTarget.subcategoryId);
+      }
+
+      const endpoint = uploadingTarget.subcategoryId
+        ? "/api/admin/os-subcategories/upload-excel"
+        : "/api/admin/os-categories/upload-excel";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const { data } = await (await import('../lib/response-utils')).safeReadResponse(response);
+
+      if (data && data.success) {
+        alert("Excel file uploaded successfully!");
+        fetchCategories();
+        setShowExcelUpload(false);
+        setSelectedFile(null);
+        setUploadingTarget({});
+      } else {
+        alert((data && data.error) || "Failed to upload file");
+      }
+    } catch (error) {
+      console.error("Error uploading Excel file:", error);
+      alert("Failed to upload Excel file");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const toggleCategoryExpanded = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories);
     if (newExpanded.has(categoryId)) {
