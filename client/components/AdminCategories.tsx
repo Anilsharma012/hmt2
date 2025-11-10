@@ -623,13 +623,27 @@ export default function AdminCategories({ token }: AdminCategoriesProps) {
                         key={subcategory.id}
                         className="flex items-center justify-between p-2 bg-gray-50 rounded"
                       >
-                        <div>
+                        <div className="flex-1">
                           <span className="font-medium">
                             {subcategory.name}
                           </span>
                           <p className="text-sm text-gray-500">
                             {subcategory.description}
                           </p>
+                          {subcategory.excelFile && (
+                            <div className="mt-2 flex items-center space-x-2 text-xs text-blue-600">
+                              <FileText className="h-3 w-3" />
+                              <span>{subcategory.excelFile.fileName}</span>
+                              <a
+                                href={subcategory.excelFile.fileUrl}
+                                download
+                                className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                              >
+                                <Download className="h-3 w-3" />
+                                Download
+                              </a>
+                            </div>
+                          )}
                           <span className="text-xs text-gray-400">
                             Slug: {subcategory.slug}
                           </span>
