@@ -67,21 +67,37 @@ function parseCSV(text: string): Record<string, string>[] {
 r.post("/os-listings/import", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "file required" });
+
+    // Extract category and subcategory from form data or body
+    // With FormData + fetch, fields come in req.body when using express.text() or custom parsing
+    let requestCategory = "";
+    let requestSubcategory = "";
+
+    // Try different ways to get the form fields
+    if (req.body) {
+      // If express middleware parsed it
+      if (typeof req.body === 'string') {
+        // Raw body string - parse manually if needed
+        requestCategory = (req.body.match(/category=([^&]*)/)?.[1] || "").toLowerCase().trim();
+        requestSubcategory = (req.body.match(/subcategory=([^&]*)/)?.[1] || "").toLowerCase().trim();
+      } else {
+        // Already parsed object
+        requestCategory = (req.body.category || "").toString().toLowerCase().trim();
+        requestSubcategory = (req.body.subcategory || "").toString().toLowerCase().trim();
+      }
+    }
+
+    // Also check query params as fallback
+    if (!requestCategory && req.query.category) {
+      requestCategory = (req.query.category || "").toString().toLowerCase().trim();
+    }
+    if (!requestSubcategory && req.query.subcategory) {
+      requestSubcategory = (req.query.subcategory || "").toString().toLowerCase().trim();
+    }
+
+    // Parse CSV
     const csv = req.file.buffer.toString("utf8");
     const rows = parseCSV(csv);
-
-    // Extract category and subcategory from form data
-    // In FormData with multer, fields are in req.body
-    let requestCategory = (req.body?.category || "").toString().toLowerCase().trim();
-    let requestSubcategory = (req.body?.subcategory || "").toString().toLowerCase().trim();
-
-    // If not in body, check if sent as individual form fields (arrays from multer)
-    if (!requestCategory && Array.isArray(req.body?.category)) {
-      requestCategory = req.body.category[0]?.toLowerCase().trim() || "";
-    }
-    if (!requestSubcategory && Array.isArray(req.body?.subcategory)) {
-      requestSubcategory = req.body.subcategory[0]?.toLowerCase().trim() || "";
-    }
 
     // Also check if no rows provided
     if (!rows || rows.length === 0) {
