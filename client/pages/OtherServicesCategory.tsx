@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { ArrowLeft, ArrowRight, Wrench, Download, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Wrench,
+  Download,
+  FileText,
+} from "lucide-react";
 import { OsSubcategory } from "@shared/types";
 
 export default function OtherServicesCategory() {
@@ -74,10 +80,7 @@ export default function OtherServicesCategory() {
             <Button onClick={fetchSubcategories} variant="outline">
               Try Again
             </Button>
-            <Button
-              onClick={() => navigate("/")}
-              variant="outline"
-            >
+            <Button onClick={() => navigate("/")} variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Services
             </Button>

@@ -23,7 +23,11 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileFilter = (_req: any, file: Express.Multer.File, cb: FileFilterCallback) => {
+const fileFilter = (
+  _req: any,
+  file: Express.Multer.File,
+  cb: FileFilterCallback,
+) => {
   const allowedMimes = [
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "application/vnd.ms-excel",
@@ -296,7 +300,7 @@ export const uploadExcelFile: RequestHandler = async (req, res) => {
         .collection("os_subcategories")
         .updateOne(
           { _id: new ObjectId(subcategoryId) },
-          { $set: { excelFile: fileData, updatedAt: new Date() } }
+          { $set: { excelFile: fileData, updatedAt: new Date() } },
         );
 
       if (result.matchedCount === 0) {
@@ -317,7 +321,7 @@ export const uploadExcelFile: RequestHandler = async (req, res) => {
         .collection("os_categories")
         .updateOne(
           { _id: new ObjectId(categoryId) },
-          { $set: { excelFile: fileData, updatedAt: new Date() } }
+          { $set: { excelFile: fileData, updatedAt: new Date() } },
         );
 
       if (result.matchedCount === 0) {
