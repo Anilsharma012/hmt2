@@ -23,6 +23,12 @@ interface Subcategory {
   count?: number;
 }
 
+interface ExcelFile {
+  fileName: string;
+  fileUrl: string;
+  uploadedAt: Date;
+}
+
 interface Category {
   _id?: string;
   name: string;
@@ -33,6 +39,7 @@ interface Category {
   order: number;
   active: boolean;
   count?: number;
+  excelFile?: ExcelFile;
 }
 
 interface AdminCategoriesProps {
