@@ -129,16 +129,16 @@ export default function OsBulkImport() {
   };
 
   const downloadTemplate = () => {
-    const template = `catSlug,subSlug,name,phone,address,lat,lng,photo1,photo2,photo3,photo4,open,close,active
-repairs,plumber,Rohtak Plumbing Services,9999999999,Sector 3 Rohtak,28.8955,76.6066,https://example.com/photo1.jpg,,,09:00,18:00,true
-repairs,electrician,City Electrical Works,9876543210,Model Town Rohtak,28.8955,76.6066,https://example.com/photo2.jpg,,,08:00,19:00,true`;
+    const template = `name,phone,address,lat,lng,photo1,photo2,photo3,photo4,open,close,active
+Rohtak Plumbing Services,9999999999,Sector 3 Rohtak,28.8955,76.6066,https://example.com/photo1.jpg,,,09:00,18:00,true
+City Electrical Works,9876543210,Model Town Rohtak,28.8955,76.6066,https://example.com/photo2.jpg,,,08:00,19:00,true`;
 
     const blob = new Blob([template], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.style.display = "none";
     a.href = url;
-    a.download = "other-services-template.csv";
+    a.download = `other-services-template-${selectedCategory}-${selectedSubcategory}.csv`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
